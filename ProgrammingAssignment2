@@ -1,0 +1,184 @@
+#Erick E. Ramírez
+#1346657
+.data
+array1: .space 40
+array2: .space 24
+input: .asciiz "Input: "
+cout1: .asciiz "Array 1: "
+cout2: .asciiz "Array 2: "
+newLine: .asciiz "\n"
+newElement: .asciiz " "
+#Any strings you may want to add
+
+.text
+.globl main
+main:
+#Load arguments for array 1 (or use the stack)
+la $a0, array1
+li $a1, 10
+jal load_array1 #load array1
+jal sort_array1 #sort array1
+jal print_array1 #print array1
+jal add_elements #add elements of array1
+move $s0, $v0 #store result in $s0
+#Load arguments for array2 (or use the stack)
+la $a0, array2
+li $a1, 6
+jal load_array2 #load array2
+jal sort_array2 #sort array2
+jal print_array2 #print array2
+jal add_elements #add elements of array2
+move $s1, $v0 #store result in $s1
+#print sum of elements in both arrays
+li $v0, 1
+move $a0, $s0
+syscall
+move $a0, $s1
+syscall
+#terminate program
+li $v0, 10
+syscall
+
+load_array1:
+#la $t0, 0	#hard reset
+while:
+			#(0 = array1 start address)
+#index = $t0 ($t0 = array1 size at end)
+beq $t0, 40, end	#branch if equal to 40, 10 items
+    li $v0, 4       	#Print string
+    la $a0, input	#load prompt
+    syscall
+    li $v0, 5		#read int
+    syscall 
+    sw $v0, array1($t0)	#store input in array 
+    addi  $t0, $t0, 4   #add by 4 to address
+    b while
+
+end:
+jr $ra		#return to main
+
+load_array2:
+add $t3, $t3, $t0	#($t3 = array2 start address)
+add $t1, $t1, $t0	#($t1 = combined array size at end)
+la $t2, 0		#counter ($t2 = array2 size at end)
+while2:
+#index = $t0
+beq $t2, 24, end2	#branch if equal to 40, 10 items
+    li $v0, 4       	#Print string
+    la $a0, input	#load prompt
+    syscall
+    li $v0, 5		#read int
+    syscall 
+    sw $v0, array1($t1)	#store input in array 
+    addi  $t2, $t2, 4   #add by 4 to counter
+    addi  $t1, $t1, 4   #add by 4 to address
+    b while2
+
+end2:
+jr $ra		#return to main
+
+
+sort_array1:
+	#li $t5, 0
+	la $t6, array1			# Copy the base address of your array into $t6
+	add $t6, $t6, 36
+outerloop1:
+	add $t7, $0, $0 	# $t7 holds a flag to determine when the list is sorted
+	la $a0, array1		# Set $a0 to the base address of the Array
+innerloop1:
+	lw $t8, 0($a0)		# sets $t8 to the current element in array
+	lw $t9, 4($a0)		# sets $t9 to the next element in array
+	sgt $t5, $t8, $t9	# $t5 = 1 if $t8 > $t9
+	beq $t5, $0, next1	# if $t5 = 1, then swap them
+	add $t7, $0, 1		# if we need to swap, we need to check the list again
+	sw $t8, 4($a0)		# store the greater numbers contents in the higher position in array (swap)
+	sw $t9, 0($a0)		# store the lesser numbers contents in the lower position in array (swap)
+next1:
+	addi $a0, $a0, 4	# advance the array to start at the next location from last time
+	bne $a0, $t6, innerloop1	# If $a0 != the end of Array, jump back to innerLoop
+	bne $t7, $0, outerloop1	# $t7 = 1, another pass is needed, jump back to outterLoop
+jr $ra
+
+sort_array2:
+	#li $t5, 0
+	la $t6, array2			# Copy the base address of your array into $t6
+	add $t6, $t6, 20
+outerloop2:
+	add $t7, $0, $0 	# $t7 holds a flag to determine when the list is sorted
+	la $a0, array2		# Set $a0 to the base address of the Array
+innerloop2:
+	lw $t8, 0($a0)		# sets $t8 to the current element in array
+	lw $t9, 4($a0)		# sets $t9 to the next element in array
+	sgt $t5, $t8, $t9	# $t5 = 1 if $t8 > $t9
+	beq $t5, $0, next2	# if $t5 = 1, then swap them
+	add $t7, $0, 1		# if we need to swap, we need to check the list again
+	sw $t8, 4($a0)		# store the greater numbers contents in the higher position in array (swap)
+	sw $t9, 0($a0)		# store the lesser numbers contents in the lower position in array (swap)
+next2:
+	addi $a0, $a0, 4	# advance the array to start at the next location from last time
+	bne $a0, $t6, innerloop2	# If $a0 != the end of Array, jump back to innerLoop
+	bne $t7, $0, outerloop2	# $t7 = 1, another pass is needed, jump back to outterLoop
+jr $ra
+
+
+print_array1:
+la $t5, 0	#hard reset
+li $v0, 4       #Print string
+la $a0, cout1	#load prompt
+syscall
+#li $v0, 1
+printing1: 
+beq $t5, 40, endp1	#branch if equal to 40, 10 items
+	lw $t6, array1($t5)
+	
+    #la $a0, array1($t5)	
+	li $v0, 1		#prints current number
+	move $a0, $t6
+	syscall 
+	
+	li $v0, 4		#print space character
+    	la $a0, newElement
+    	syscall
+    	
+	addi  $t5, $t5, 4	#add by 4 to address
+    	j printing1
+
+endp1:
+	li $v0, 4		#print \n character
+    	la $a0, newLine
+    	syscall
+jr $ra
+
+print_array2:
+la $t5, 0	#hard reset
+li $v0, 4       #Print string
+la $a0, cout2	#load prompt
+syscall
+#li $v0, 1
+printing2: 
+beq $t5, 24, endp2	#branch if equal to 40, 10 items
+	lw $t6, array2($t5)
+	
+    #la $a0, array1($t5)	
+	li $v0, 1		#prints current number
+	move $a0, $t6
+	syscall 
+	
+	li $v0, 4		#print space character
+    	la $a0, newElement
+    	syscall
+    	
+	addi  $t5, $t5, 4	#add by 4 to address
+    	j printing2
+
+endp2:
+	li $v0, 4		#print \n character
+    	la $a0, newLine
+    	syscall
+jr $ra
+
+
+
+add_elements:
+
+jr $ra
