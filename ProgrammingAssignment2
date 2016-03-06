@@ -3,11 +3,12 @@
 .data
 array1: .space 40
 array2: .space 24
-input: .asciiz "Input: "
-cout1: .asciiz "Array 1: "
-cout2: .asciiz "Array 2: "
+input: .asciiz "Input an element: "
+cout1: .asciiz "Ordered Array 1: "
+cout2: .asciiz "Ordered Array 2: "
 newLine: .asciiz "\n"
 newElement: .asciiz " "
+sumMess: .asciiz "The sum of both arrays is: "
 #Any strings you may want to add
 
 .text
@@ -19,7 +20,7 @@ li $a1, 10
 jal load_array1 #load array1
 jal sort_array1 #sort array1
 jal print_array1 #print array1
-jal add_elements #add elements of array1
+jal add_elements1 #add elements of array1
 move $s0, $v0 #store result in $s0
 #Load arguments for array2 (or use the stack)
 la $a0, array2
@@ -27,12 +28,10 @@ li $a1, 6
 jal load_array2 #load array2
 jal sort_array2 #sort array2
 jal print_array2 #print array2
-jal add_elements #add elements of array2
+jal add_elements2 #add elements of array2
 move $s1, $v0 #store result in $s1
 #print sum of elements in both arrays
 li $v0, 1
-move $a0, $s0
-syscall
 move $a0, $s1
 syscall
 #terminate program
@@ -117,7 +116,7 @@ innerloop2:
 next2:
 	addi $a0, $a0, 4	# advance the array to start at the next location from last time
 	bne $a0, $t6, innerloop2	# If $a0 != the end of Array, jump back to innerLoop
-	bne $t7, $0, outerloop2	# $t7 = 1, another pass is needed, jump back to outterLoop
+	bne $t7, $0, outerloop2	# $t7 = 1, another pass is needed, jump back to outerLoop
 jr $ra
 
 
@@ -128,10 +127,9 @@ la $a0, cout1	#load prompt
 syscall
 #li $v0, 1
 printing1: 
-beq $t5, 40, endp1	#branch if equal to 40, 10 items
+beq $t5, 40, endp1		#branch if equal to 40, 10 items
 	lw $t6, array1($t5)
-	
-    #la $a0, array1($t5)	
+		
 	li $v0, 1		#prints current number
 	move $a0, $t6
 	syscall 
@@ -154,12 +152,12 @@ la $t5, 0	#hard reset
 li $v0, 4       #Print string
 la $a0, cout2	#load prompt
 syscall
-#li $v0, 1
+
 printing2: 
-beq $t5, 24, endp2	#branch if equal to 40, 10 items
+beq $t5, 24, endp2		#branch if equal to 40, 10 items
 	lw $t6, array2($t5)
 	
-    #la $a0, array1($t5)	
+	
 	li $v0, 1		#prints current number
 	move $a0, $t6
 	syscall 
@@ -179,6 +177,40 @@ jr $ra
 
 
 
-add_elements:
+add_elements1:
+li $t5, 0
+loopa1:
+beq $t5, 40, enda1		#branch if equal to 40, 10 items
+	lw $t6, array1($t5)
+			
+	add $t4, $t4, $t6	#adds current number
+	    	
+	addi  $t5, $t5, 4	#add by 4 to address
+    	j loopa1
 
+enda1:
+move $v0, $t4
+jr $ra
+
+add_elements2:
+li $t4, 0
+li $t5, 0
+li $t6, 0
+loopa2:
+beq $t5, 24, enda2		#branch if equal to 40, 10 items
+	lw $t6, array2($t5)
+			
+	add $t4, $t4, $t6	#adds current number
+	    	
+	addi  $t5, $t5, 4	#add by 4 to address
+    	j loopa2
+
+enda2:
+li $v0, 4			# print sum message
+la $a0, sumMess
+syscall
+    	
+add $t4, $t4, $s0		#add both sums
+move $v0, $t4
+		
 jr $ra
